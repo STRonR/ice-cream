@@ -2,847 +2,903 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>动态雪糕 - 四主题切换</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>动态雪糕 | 稳定版</title>
     <style>
-        /* ============================================================
-           CSS 变量定义 - 4种主题 (草莓/抹茶/巧克力/蓝莓)
-           ============================================================ */
         :root {
-            /* --- 默认主题：草莓 (Strawberry) --- */
-            --ice-primary: #FFB5C5;
-            --ice-light: #FFD6E2;
-            --ice-dark: #F08FA5;
-            --ice-shadow: #E07A92;
-            --drip-color: rgba(255, 181, 197, 0.75);
-            --drip-color-alt: rgba(255, 200, 215, 0.7);
-            --ice-glow-inner: rgba(255, 220, 230, 0.5);
-            --texture-stripe: rgba(255, 255, 255, 0.08);
-            /* 提示文字颜色 - 草莓 */
-            --text-color: #E07A92;
-            --text-glow: rgba(255, 140, 165, 0.5);
-
-            /* --- 木棍色彩 (通用) --- */
-            --stick-primary: #D4A574;
-            --stick-light: #E0BC98;
-            --stick-dark: #C08D5C;
-            --stick-edge: #B07848;
-
-            /* --- 投影与高光 --- */
-            --drop-shadow-1: rgba(0, 0, 0, 0.18);
-            --drop-shadow-2: rgba(0, 0, 0, 0.12);
-            --drop-shadow-3: rgba(0, 0, 0, 0.07);
-            --inner-shadow-light: rgba(255, 255, 255, 0.5);
-            --inner-shadow-dark: rgba(0, 0, 0, 0.08);
-
-            /* --- 背景渐变 --- */
-            --bg-top: #87CEFA;
-            --bg-mid: #4682B4;
-            --bg-bottom: #1E90FF;
-
-            /* --- 尺寸体系 --- */
-            --ice-width: 130px;
-            --ice-height: 170px;
-            --ice-radius-top-h: 60px;
-            --ice-radius-top-v: 52px;
-            --ice-radius-bottom-h: 22px;
-            --ice-radius-bottom-v: 18px;
-            --stick-width: 32px;
-            --stick-height: 68px;
-            --stick-radius: 5px;
-            --drip-size: 14px;
-            --highlight-band-w: 26px;
-            --highlight-band-h: 62%;
-            --light-sweep-size: 56px;
-
-            /* --- 动画参数 --- */
-            --breathe-float: 8px;
-            --breathe-swing: 2deg;
-            --breathe-duration: 3s;
-            --light-sweep-duration: 5s;
-            --drip-duration: 3s;
-            --drip-fall: 58px;
+            --switch-dur: 0.45s;
+            --switch-ease: cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        /* --- 抹茶主题 --- */
-        [data-theme="matcha"] {
-            --ice-primary: #B5D5A5;
-            --ice-light: #D2E8C8;
-            --ice-dark: #8DB87C;
-            --ice-shadow: #6D9A5C;
-            --drip-color: rgba(181, 213, 165, 0.75);
-            --drip-color-alt: rgba(200, 225, 190, 0.7);
-            --ice-glow-inner: rgba(210, 235, 200, 0.5);
-            --texture-stripe: rgba(255, 255, 255, 0.09);
-            --text-color: #6D9A5C;
-            --text-glow: rgba(120, 170, 100, 0.5);
+        /* 主题系统 */
+        [data-theme="0"] {
+            --bg-start: #ff7eb3;
+            --bg-mid: #ff758c;
+            --bg-end: #ff758c;
+            --ice-color: #FFB6C1;
+            --ice-highlight: rgba(255, 255, 255, 0.65);
+            --stick-color: #D2B48C;
+            --drip-color: #FF8DA1;
+            --pattern: radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.2) 4px, transparent 4px), radial-gradient(circle at 75% 60%, rgba(255, 255, 255, 0.15) 6px, transparent 6px);
+        }
+        [data-theme="1"] {
+            --bg-start: #84fab0;
+            --bg-mid: #8fd3f4;
+            --bg-end: #a8e6cf;
+            --ice-color: #A8E6CF;
+            --ice-highlight: rgba(255, 255, 255, 0.5);
+            --stick-color: #C4A484;
+            --drip-color: #88D8B0;
+            --pattern: repeating-linear-gradient(45deg, transparent, transparent 12px, rgba(255, 255, 255, 0.18) 12px, rgba(255, 255, 255, 0.18) 14px);
+        }
+        [data-theme="2"] {
+            --bg-start: #ff9a44;
+            --bg-mid: #fc6076;
+            --bg-end: #f6d365;
+            --ice-color: #8B4513;
+            --ice-highlight: rgba(255, 255, 255, 0.25);
+            --stick-color: #DEB887;
+            --drip-color: #A0522D;
+            --pattern: radial-gradient(circle at 40% 25%, rgba(255, 255, 255, 0.25) 8px, transparent 8px), radial-gradient(circle at 65% 70%, rgba(255, 255, 255, 0.15) 10px, transparent 10px);
+        }
+        [data-theme="3"] {
+            --bg-start: #a18cd1;
+            --bg-mid: #fbc2eb;
+            --bg-end: #6a5acd;
+            --ice-color: #6A5ACD;
+            --ice-highlight: rgba(200, 200, 255, 0.6);
+            --stick-color: #D2B48C;
+            --drip-color: #7B68EE;
+            --pattern: linear-gradient(135deg, transparent 40%, rgba(255, 255, 255, 0.25) 42%, transparent 45%);
         }
 
-        /* --- 巧克力主题 (已更新为丝滑牛奶巧克力) --- */
-        [data-theme="chocolate"] {
-            --ice-primary: #D2A679;      /* 主色：柔和牛奶巧克力 */
-            --ice-light: #F0D4B0;       /* 高光：淡奶油色 */
-            --ice-dark: #B87B4A;        /* 暗部：温暖可可色 */
-            --ice-shadow: #8C5A32;      /* 阴影：深巧克力色 */
-            --drip-color: rgba(210, 166, 121, 0.75);
-            --drip-color-alt: rgba(230, 195, 150, 0.7);
-            --ice-glow-inner: rgba(240, 210, 175, 0.5);
-            --texture-stripe: rgba(255, 255, 255, 0.08);
-            --text-color: #B87B4A;
-            --text-glow: rgba(184, 123, 74, 0.5);
-        }
-
-        /* --- 蓝莓主题 --- */
-        [data-theme="blueberry"] {
-            --ice-primary: #C5B5E0;
-            --ice-light: #D8CCF0;
-            --ice-dark: #9B8CC0;
-            --ice-shadow: #7B6CA0;
-            --drip-color: rgba(197, 181, 224, 0.75);
-            --drip-color-alt: rgba(210, 198, 235, 0.7);
-            --ice-glow-inner: rgba(215, 205, 238, 0.5);
-            --texture-stripe: rgba(255, 255, 255, 0.1);
-            --text-color: #9B8CC0;
-            --text-glow: rgba(140, 125, 180, 0.5);
-        }
-
-        /* ============================================================
-           全局重置 & 背景
-           ============================================================ */
-        *,
-        *::before,
-        *::after {
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-        }
-
-        html {
-            height: 100%;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            min-height: 100dvh;
-            background: linear-gradient(180deg,
-                    var(--bg-top) 0%,
-                    var(--bg-mid) 45%,
-                    var(--bg-bottom) 100%);
-            background-attachment: fixed;
-            overflow: hidden;
-            font-family: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            position: relative;
+            user-select: none;
             -webkit-tap-highlight-color: transparent;
             -webkit-user-select: none;
-            user-select: none;
-            gap: 10px;
         }
-
-        /* ============================================================
-           背景装饰容器 - 粒子承载层
-           ============================================================ */
-        .bg-decorations {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            width: 100dvw;
+        body {
             height: 100vh;
             height: 100dvh;
-            pointer-events: none;
-            z-index: 0;
             overflow: hidden;
-        }
-
-        /* --- 粒子通用样式 --- */
-        .particle {
-            position: absolute;
-            pointer-events: none;
-            will-change: transform, opacity;
-            animation: floatUp var(--float-duration, 8s) ease-in-out infinite;
-            animation-delay: var(--float-delay, 0s);
-            opacity: 0;
-            line-height: 1;
-            text-shadow: 0 0 6px currentColor;
-        }
-
-        .particle-heart {
-            color: var(--heart-color, #FFB5C5);
-        }
-
-        .particle-snow {
-            color: var(--snow-color, rgba(255, 255, 255, 0.85));
-            text-shadow: 0 0 8px rgba(255, 255, 255, 0.6), 0 0 16px rgba(255, 255, 255, 0.3);
-        }
-
-        /* ============================================================
-           floatUp 关键帧 - 粒子上浮+旋转+漂移
-           ============================================================ */
-        @keyframes floatUp {
-            0% {
-                transform: translateY(0) translateX(0) rotate(0deg);
-                opacity: 0;
-            }
-            6% {
-                opacity: var(--float-opacity, 0.55);
-            }
-            82% {
-                opacity: var(--float-opacity, 0.5);
-            }
-            100% {
-                transform: translateY(-108vh) translateX(var(--float-drift, 18px)) rotate(var(--float-rotation, 420deg));
-                opacity: 0;
-            }
-        }
-
-        /* ============================================================
-           雪糕外层容器 - 呼吸动画
-           ============================================================ */
-        .popsicle-wrapper {
-            position: relative;
-            z-index: 2;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            will-change: transform;
-            animation: breathe var(--breathe-duration) ease-in-out infinite;
-            transform-origin: center center;
-            transition: none;
-        }
-
-        .popsicle-wrapper.bounce-switch {
-            animation: bounce-switch 180ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
-
-        /* ============================================================
-           雪糕主体 - 多层投影
-           ============================================================ */
-        .popsicle {
-            position: relative;
+            background: linear-gradient(135deg, var(--bg-start), var(--bg-mid), var(--bg-end));
+            transition: background 1s ease;
             display: flex;
             flex-direction: column;
             align-items: center;
-            filter:
-                drop-shadow(0 10px 22px var(--drop-shadow-1)) drop-shadow(0 5px 10px var(--drop-shadow-2)) drop-shadow(0 2px 5px var(--drop-shadow-3));
-            will-change: filter;
+            justify-content: center;
+            font-family: system-ui, -apple-system, 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+            overscroll-behavior: none;
+            -webkit-overflow-scrolling: auto;
+            /* 移除 position: fixed; inset: 0; */
         }
 
-        /* ============================================================
-           冰体样式
-           ============================================================ */
-        .ice-body {
-            position: relative;
-            width: var(--ice-width);
-            height: var(--ice-height);
-            border-radius:
-                var(--ice-radius-top-h) var(--ice-radius-top-h) var(--ice-radius-bottom-h) var(--ice-radius-bottom-h) / var(--ice-radius-top-v) var(--ice-radius-top-v) var(--ice-radius-bottom-v) var(--ice-radius-bottom-v);
-            background: radial-gradient(ellipse at 38% 35%,
-                    var(--ice-light) 0%,
-                    var(--ice-primary) 38%,
-                    var(--ice-dark) 72%,
-                    var(--ice-shadow) 100%);
-            box-shadow:
-                inset 0 3px 7px var(--inner-shadow-light),
-                inset -4px -8px 18px var(--inner-shadow-dark),
-                inset 2px 2px 4px rgba(255, 255, 255, 0.3),
-                0 3px 6px rgba(0, 0, 0, 0.06);
-            overflow: hidden;
-            z-index: 2;
-            will-change: box-shadow;
-        }
-
-        /* --- 冰体纹理 (伪元素 + repeating-linear-gradient) --- */
-        .ice-body::before {
-            content: '';
-            position: absolute;
+        /* 背景粒子 */
+        .particles {
+            position: fixed;
             inset: 0;
-            background: repeating-linear-gradient(0deg,
-                    transparent 0px,
-                    transparent 3px,
-                    var(--texture-stripe) 3px,
-                    var(--texture-stripe) 4.5px);
-            border-radius: inherit;
-            z-index: 1;
-            pointer-events: none;
-        }
-
-        /* --- 半透明白色高光带 --- */
-        .ice-body::after {
-            content: '';
-            position: absolute;
-            top: 12%;
-            left: 22%;
-            width: var(--highlight-band-w);
-            height: var(--highlight-band-h);
-            border-radius: 50%;
-            background: linear-gradient(180deg,
-                    rgba(255, 255, 255, 0.7) 0%,
-                    rgba(255, 255, 255, 0.55) 18%,
-                    rgba(255, 255, 255, 0.35) 42%,
-                    rgba(255, 255, 255, 0.08) 72%,
-                    transparent 100%);
-            filter: blur(5px);
-            z-index: 3;
-            pointer-events: none;
-            transform: rotate(-6deg);
-        }
-
-        /* --- 光线游走层 --- */
-        .light-sweep {
-            position: absolute;
-            top: 6px;
-            left: 8px;
-            width: var(--light-sweep-size);
-            height: var(--light-sweep-size);
-            border-radius: 50%;
-            background: radial-gradient(circle at center,
-                    rgba(255, 255, 255, 0.75) 0%,
-                    rgba(255, 255, 255, 0.4) 22%,
-                    rgba(255, 255, 255, 0.08) 50%,
-                    transparent 70%);
-            pointer-events: none;
-            z-index: 4;
-            will-change: transform, opacity;
-            animation: light-sweep-move var(--light-sweep-duration) ease-in-out infinite;
-        }
-
-        /* ============================================================
-           木棍样式
-           ============================================================ */
-        .stick {
-            width: var(--stick-width);
-            height: var(--stick-height);
-            margin-top: -4px;
-            border-radius: 0 0 var(--stick-radius) var(--stick-radius);
-            background: linear-gradient(180deg,
-                    var(--stick-light) 0%,
-                    var(--stick-primary) 8%,
-                    var(--stick-dark) 22%,
-                    var(--stick-primary) 38%,
-                    var(--stick-light) 50%,
-                    var(--stick-primary) 62%,
-                    var(--stick-dark) 76%,
-                    var(--stick-edge) 90%,
-                    var(--stick-dark) 100%);
-            box-shadow:
-                0 2px 4px rgba(0, 0, 0, 0.1),
-                inset 2px 0 3px rgba(255, 255, 255, 0.2),
-                inset -2px 0 3px rgba(0, 0, 0, 0.08);
-            z-index: 1;
-            position: relative;
-        }
-
-        .stick::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: calc(var(--stick-width) + 6px);
-            height: 10px;
-            border-radius: 50%;
-            background: rgba(0, 0, 0, 0.06);
-            filter: blur(3px);
             pointer-events: none;
             z-index: 0;
+            overflow: hidden;
+        }
+        .particle {
+            position: absolute;
+            bottom: -30px;
+            opacity: 0.7;
+            will-change: transform, opacity;
+            animation: floatUp linear infinite;
+        }
+        .particle.heart::before {
+            content: "❤";
+            color: #FF69B4;
+            font-size: 20px;
+        }
+        .particle.snow::before {
+            content: "❄";
+            color: #E0F7FA;
+            font-weight: bold;
+            font-size: 20px;
         }
 
-        /* ============================================================
-           水滴容器 & 水滴样式
-           ============================================================ */
-        .drips {
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0) rotate(0deg) scale(0.6);
+                opacity: 0;
+            }
+            15% {
+                opacity: 0.8;
+            }
+            85% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-110vh) rotate(360deg) scale(1.1);
+                opacity: 0;
+            }
+        }
+
+        /* 雪糕主体场景 */
+        .scene {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* popsicle 容器 - 使用 relative 定位，body 和 stick 在其中 absolute 定位 */
+        .popsicle {
+            position: relative;
+            width: 130px;
+            height: 260px;
+            margin-bottom: 36px;
+            cursor: pointer;
+            touch-action: none;
+            -webkit-touch-callout: none;
+        }
+
+        /* 切换动画 */
+        .popsicle.switching {
+            animation: switchAnim 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
+        }
+
+        @keyframes switchAnim {
+            0% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(0.82) rotate(-6deg);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        /* 咬一口震动 */
+        .popsicle.bite {
+            animation: biteShake 0.3s ease-out;
+        }
+
+        @keyframes biteShake {
+            0% {
+                transform: scale(1);
+            }
+            25% {
+                transform: scale(0.95) rotate(-3deg);
+            }
+            50% {
+                transform: scale(1.02) rotate(2deg);
+            }
+            75% {
+                transform: scale(0.98) rotate(-1deg);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* 雪糕身体 - absolute 定位，底部固定在棍子上方 */
+        .body {
             position: absolute;
-            top: 0;
+            bottom: 62px;
+            /* 固定在棍子顶部上方，确保无缝连接 */
             left: 0;
             width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 6;
-        }
-
-        .drip {
-            position: absolute;
-            width: var(--drip-size);
-            height: var(--drip-size);
-            border-radius: 50% 0 50% 50%;
-            transform: rotate(45deg) scale(1);
-            opacity: 0;
-            will-change: transform, opacity;
-            pointer-events: none;
-        }
-
-        .drip-1 {
-            bottom: 8px;
-            left: calc(50% - 16px);
-            background: radial-gradient(circle at 35% 35%,
-                    rgba(255, 210, 225, 0.85) 0%,
-                    var(--drip-color) 50%,
-                    rgba(240, 143, 165, 0.5) 100%);
-            animation: drip-fall var(--drip-duration) ease-in infinite;
-            animation-delay: 0s;
-        }
-
-        .drip-2 {
-            bottom: 4px;
-            left: calc(50% + 4px);
-            background: radial-gradient(circle at 35% 35%,
-                    rgba(255, 218, 230, 0.8) 0%,
-                    var(--drip-color-alt) 50%,
-                    rgba(240, 150, 170, 0.45) 100%);
-            animation: drip-fall var(--drip-duration) ease-in infinite;
-            animation-delay: calc(var(--drip-duration) * 0.5);
-        }
-
-        /* ============================================================
-           提示文字样式
-           ============================================================ */
-        .reminder-text {
-            position: relative;
+            height: 155px;
+            background: var(--ice-color);
+            background-image: var(--pattern);
+            border-radius: 50px 50px 24px 24px;
+            /* 增强投影和轮廓，防止与背景融合 */
+            box-shadow: inset -10px -8px 20px rgba(0, 0, 0, 0.12),
+                0 18px 36px rgba(0, 0, 0, 0.25),
+                0 0 0 4px rgba(255, 255, 255, 0.2);
+            animation: breathe 3.2s ease-in-out infinite;
+            will-change: transform, height;
+            transition: background-color 0.45s ease, background-image 0.45s ease, box-shadow 0.45s ease, height 0.28s cubic-bezier(0.25, 0.8, 0.25, 1.2), opacity 0.35s ease, border-radius 0.28s ease;
+            transform-origin: bottom center;
+            overflow: visible;
             z-index: 2;
-            margin-top: 8px;
-            font-size: clamp(15px, 2.8vw, 21px);
-            font-weight: 600;
-            letter-spacing: 0.12em;
-            color: var(--text-color);
-            text-shadow:
-                0 0 12px var(--text-glow),
-                0 0 28px var(--text-glow),
-                0 0 2px rgba(255, 255, 255, 0.6),
-                0 1px 2px rgba(0, 0, 0, 0.15);
-            animation: text-gentle-float 4s ease-in-out infinite;
-            transition: color 0.4s ease, text-shadow 0.4s ease;
-            will-change: transform, text-shadow;
-            pointer-events: none;
-            white-space: nowrap;
         }
 
-        @keyframes text-gentle-float {
-            0%,
-            100% {
-                transform: translateY(0);
-            }
-            35% {
-                transform: translateY(-4px);
-            }
-            65% {
-                transform: translateY(-1px);
-            }
-        }
-
-        /* ============================================================
-           关键帧动画
-           ============================================================ */
         @keyframes breathe {
             0%,
             100% {
                 transform: translateY(0) rotate(0deg);
             }
-            25% {
-                transform: translateY(calc(var(--breathe-float) * -0.7)) rotate(calc(var(--breathe-swing) * -0.6));
+            50% {
+                transform: translateY(-8px) rotate(1.8deg);
+            }
+        }
+
+        /* 高光 */
+        .highlight {
+            position: absolute;
+            top: 24px;
+            left: 30px;
+            width: 30px;
+            height: 90px;
+            background: linear-gradient(to bottom, var(--ice-highlight), transparent 75%);
+            border-radius: 50%;
+            transform: rotate(16deg);
+            animation: shimmer 5s ease-in-out infinite;
+            transition: background 0.45s ease, opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        @keyframes shimmer {
+            0%,
+            100% {
+                opacity: 0.3;
+                transform: rotate(16deg) translate(0, 0);
             }
             50% {
-                transform: translateY(calc(var(--breathe-float) * -1)) rotate(0deg);
-            }
-            75% {
-                transform: translateY(calc(var(--breathe-float) * -0.5)) rotate(calc(var(--breathe-swing) * 0.8));
+                opacity: 0.8;
+                transform: rotate(16deg) translate(10px, 8px);
             }
         }
 
-        @keyframes bounce-switch {
-            0% {
-                transform: scale(1) rotate(0deg);
-            }
-            28% {
-                transform: scale(0.88) rotate(-3deg);
-            }
-            55% {
-                transform: scale(1.05) rotate(1.5deg);
-            }
-            78% {
-                transform: scale(0.97) rotate(-0.4deg);
-            }
-            100% {
-                transform: scale(1) rotate(0deg);
-            }
+        /* 棍子 - absolute 定位在容器底部 */
+        .stick {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 28px;
+            height: 75px;
+            margin-left: -14px;
+            background: var(--stick-color);
+            border-radius: 0 0 16px 16px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.22);
+            transition: background-color 0.45s ease;
+            z-index: 1;
         }
 
-        @keyframes light-sweep-move {
-            0% {
-                transform: translate(0px, 0px);
-                opacity: 0.3;
-            }
-            22% {
-                transform: translate(38px, 48px);
-                opacity: 0.65;
-            }
-            44% {
-                transform: translate(68px, 98px);
-                opacity: 0.7;
-            }
-            56% {
-                transform: translate(48px, 62px);
-                opacity: 0.5;
-            }
-            78% {
-                transform: translate(14px, 16px);
-                opacity: 0.35;
-            }
-            100% {
-                transform: translate(0px, 0px);
-                opacity: 0.3;
-            }
+        /* 滴落的水滴 - 在 body 内部，相对于 body 底部 */
+        .drip {
+            position: absolute;
+            bottom: -6px;
+            width: 14px;
+            height: 14px;
+            background: var(--drip-color);
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(45deg);
+            transition: background-color 0.45s ease;
+            animation: drop 2.6s ease-in infinite;
+            z-index: 3;
+            pointer-events: none;
         }
 
-        @keyframes drip-fall {
+        .drip:nth-of-type(2) {
+            left: 20px;
+        }
+        .drip:nth-of-type(3) {
+            left: 88px;
+            animation-delay: 1.3s;
+        }
+
+        @keyframes drop {
             0% {
                 transform: rotate(45deg) translateY(0) scale(1);
-                opacity: 0;
+                opacity: 0.85;
             }
-            6% {
-                opacity: 0.75;
-                transform: rotate(45deg) translateY(0) scale(1);
-            }
-            55% {
-                transform: rotate(45deg) translateY(calc(var(--drip-fall) * 0.6)) scale(0.55);
-                opacity: 0.4;
-            }
-            85% {
-                transform: rotate(45deg) translateY(var(--drip-fall)) scale(0.12);
-                opacity: 0;
+            70% {
+                opacity: 0.6;
             }
             100% {
-                transform: rotate(45deg) translateY(var(--drip-fall)) scale(0);
+                transform: rotate(45deg) translateY(70px) scale(0.35);
                 opacity: 0;
             }
         }
 
-        /* ============================================================
-           响应式适配
-           ============================================================ */
-        @media (max-width: 480px) {
-            :root {
-                --ice-width: 105px;
-                --ice-height: 140px;
-                --ice-radius-top-h: 50px;
-                --ice-radius-top-v: 42px;
-                --ice-radius-bottom-h: 18px;
-                --ice-radius-bottom-v: 15px;
-                --stick-width: 27px;
-                --stick-height: 55px;
-                --drip-size: 11px;
-                --light-sweep-size: 44px;
-                --highlight-band-w: 20px;
-                --breathe-float: 6px;
-                --breathe-swing: 1.5deg;
-                --drip-fall: 44px;
+        /* 提示文字 */
+        .hint {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 14px;
+            letter-spacing: 1px;
+            background: rgba(0, 0, 0, 0.22);
+            padding: 10px 20px;
+            border-radius: 20px;
+            animation: pulseHint 2s ease-in-out infinite alternate;
+            text-align: center;
+            max-width: 90%;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+
+        @keyframes pulseHint {
+            0% {
+                opacity: 0.6;
+                transform: translateY(0);
             }
-            .reminder-text {
-                font-size: 13px;
-                letter-spacing: 0.09em;
-                margin-top: 4px;
+            100% {
+                opacity: 1;
+                transform: translateY(-4px);
             }
         }
 
-        @media (max-width: 360px) {
-            :root {
-                --ice-width: 88px;
-                --ice-height: 118px;
-                --ice-radius-top-h: 42px;
-                --ice-radius-top-v: 35px;
-                --ice-radius-bottom-h: 15px;
-                --ice-radius-bottom-v: 12px;
-                --stick-width: 22px;
-                --stick-height: 46px;
-                --drip-size: 9px;
-                --light-sweep-size: 36px;
-                --highlight-band-w: 16px;
-                --breathe-float: 5px;
-                --breathe-swing: 1.2deg;
-                --drip-fall: 34px;
+        /* 糖屑特效 */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1000;
+            animation: popOut 0.8s ease-out forwards;
+        }
+
+        @keyframes popOut {
+            0% {
+                transform: translate(0, 0) scale(1) rotate(0deg);
+                opacity: 1;
             }
-            .reminder-text {
-                font-size: 11px;
-                letter-spacing: 0.06em;
-                margin-top: 2px;
+            100% {
+                transform: translate(var(--tx), var(--ty)) scale(0) rotate(720deg);
+                opacity: 0;
             }
         }
 
-        @media (min-width: 1200px) {
-            :root {
-                --ice-width: 148px;
-                --ice-height: 192px;
-                --ice-radius-top-h: 68px;
-                --ice-radius-top-v: 58px;
-                --ice-radius-bottom-h: 26px;
-                --ice-radius-bottom-v: 20px;
-                --stick-width: 36px;
-                --stick-height: 76px;
-                --drip-size: 16px;
-                --light-sweep-size: 62px;
-                --highlight-band-w: 30px;
-                --drip-fall: 66px;
-            }
-            .reminder-text {
-                font-size: 22px;
-                letter-spacing: 0.15em;
-                margin-top: 12px;
-            }
+        /* 彩蛋状态 - 放在 body 内部，显示在残存雪糕上方 */
+        .empty-state {
+            position: absolute;
+            top: -90px;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 70px;
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+            z-index: 10;
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
         }
 
-        /* ============================================================
-           无障碍降级：减少动画偏好
-           ============================================================ */
+        .empty-state.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .empty-text {
+            position: absolute;
+            bottom: -36px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            width: 200px;
+            text-align: center;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            transition: all 0.5s ease 0.2s;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 8px 12px;
+            border-radius: 10px;
+            pointer-events: none;
+            z-index: 10;
+            white-space: nowrap;
+        }
+
+        .empty-text.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
         @media (prefers-reduced-motion: reduce) {
-            .popsicle-wrapper {
-                animation: none !important;
-                transform: translateY(calc(var(--breathe-float) * -0.5)) rotate(0deg) !important;
+            * {
+                animation-duration: 0.01s !important;
+                transition-duration: 0.01s !important;
             }
+        }
 
-            .popsicle-wrapper.bounce-switch {
-                animation: none !important;
-                transform: scale(1) rotate(0deg) !important;
+        /* 小屏手机优化 */
+        @media (max-width: 380px) {
+            .popsicle {
+                width: 110px;
+                height: 230px;
+                margin-bottom: 28px;
             }
+            .body {
+                bottom: 54px;
+                height: 130px;
+                border-radius: 44px 44px 20px 20px;
+            }
+            .stick {
+                width: 24px;
+                height: 64px;
+                margin-left: -12px;
+            }
+            .highlight {
+                top: 18px;
+                left: 24px;
+                width: 24px;
+                height: 70px;
+            }
+            .drip:nth-of-type(2) {
+                left: 16px;
+            }
+            .drip:nth-of-type(3) {
+                left: 72px;
+            }
+            .empty-state {
+                top: -75px;
+                font-size: 56px;
+            }
+            .empty-text {
+                bottom: -30px;
+                font-size: 14px;
+                width: 170px;
+            }
+            .hint {
+                font-size: 12px;
+                padding: 8px 16px;
+            }
+        }
+        /* 爱心温馨提示 */
+        .love-hint {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 16px;
+            padding: 10px 18px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #fff;
+            font-size: 13px;
+            line-height: 1.4;
+            text-align: center;
+            max-width: 280px;
+            animation: floatLove 3s ease-in-out infinite;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            pointer-events: none; /* 不干扰点击 */
+            z-index: 5;
+        }
 
-            .light-sweep {
-                animation: none !important;
-                opacity: 0.35;
-                transform: translate(30px, 40px);
-            }
+        .love-hint .heart-icon {
+            font-size: 18px;
+            animation: beatHeart 1.2s ease-in-out infinite;
+            display: inline-block;
+            transform-origin: center;
+        }
 
-            .drip-1,
-            .drip-2 {
-                animation: none !important;
-                opacity: 0;
-                display: none;
-            }
+        .love-hint .hint-text {
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
 
-            .particle {
-                animation: none !important;
-                opacity: 0 !important;
-            }
+        /* 爱心跳动动画 */
+        @keyframes beatHeart {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.25); }
+        }
 
-            .reminder-text {
-                animation: none !important;
-                transform: translateY(-2px);
+        /* 提示框轻微浮动 */
+        @keyframes floatLove {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 380px) {
+            .love-hint {
+                margin-top: 12px;
+                padding: 8px 14px;
+                font-size: 12px;
+                max-width: 240px;
+                gap: 6px;
             }
+            .love-hint .heart-icon {
+                font-size: 16px;
+            }
+        }
+
+        /* 暗色主题下增强对比度 */
+        [data-theme="2"] .love-hint {
+            background: rgba(0, 0, 0, 0.25);
+            border-color: rgba(255, 255, 255, 0.35);
         }
     </style>
 </head>
-<body data-theme="strawberry">
-
-    <!-- ============================================================
-    背景装饰容器 - JS动态填充粒子
-    ============================================================ -->
-    <div class="bg-decorations" id="bgDecorations" aria-hidden="true"></div>
-
-    <!-- ============================================================
-    雪糕主体结构
-    ============================================================ -->
-    <div class="popsicle-wrapper" id="popsicleWrapper">
-        <div class="popsicle">
-            <!-- 冰体 -->
-            <div class="ice-body">
-                <!-- 光线游走层 -->
-                <div class="light-sweep"></div>
+<body data-theme="0">
+    <div class="particles" id="particles"></div>
+    <main class="scene">
+        <div class="popsicle" id="popsicle">
+            <div class="body" id="iceBody">
+                <div class="highlight"></div>
+                <div class="drip"></div>
+                <div class="drip"></div>
+                <div class="empty-state" id="emptyEmoji">🤤</div>
+                <div class="empty-text" id="emptyText">太好吃啦！双击重置</div>
             </div>
-            <!-- 木棍 -->
             <div class="stick"></div>
         </div>
-        <!-- 水滴独立容器 -->
-        <div class="drips">
-            <div class="drip drip-1"></div>
-            <div class="drip drip-2"></div>
+        <div class="hint">👆 点击咬一口 / 上滑换口味 / 长按加速融化</div>
+
+        <div class="love-hint" id="loveHint">
+            <span class="heart-icon">💗</span>
+            <span class="hint-text">雪糕好吃，也不要贪嘴，照顾好自己哦，琳</span>
         </div>
-    </div>
+    </main>
 
-    <!-- ============================================================
-    提示文字 - 颜色随主题变化
-    ============================================================ -->
-    <p class="reminder-text" id="reminderText">💗 注意身体哦 ~</p>
-
-    <!-- ============================================================
-    JavaScript：粒子生成 + 主题切换交互
-    ============================================================ -->
     <script>
         (function() {
-            // ==================== 主题配置 ====================
-            const themes = ['strawberry', 'matcha', 'chocolate', 'blueberry'];
-            const themeNames = ['草莓', '抹茶', '巧克力', '蓝莓'];
-            const themeEmojis = ['💗', '💚', '🤎', '💜'];
-            let currentThemeIndex = 0;
+            'use strict';
 
-            // ==================== DOM 引用 ====================
-            const body = document.body;
-            const wrapper = document.getElementById('popsicleWrapper');
-            const bgContainer = document.getElementById('bgDecorations');
-            const reminderText = document.getElementById('reminderText');
+            // 1. 粒子系统
+            const pContainer = document.getElementById('particles');
+            const particleCount = 25;
 
-            // ==================== 粒子生成 ====================
-            const PARTICLE_COUNT = 20;
-            const heartColors = [
-                '#FFB5C5', '#FFD0DC', '#FF9EAF', '#F8A4B8', '#FFC2D0',
-                '#FFAAB8', '#FFBCC8', '#F095A8', '#FFC8D4', '#FF99AD'
-            ];
-            const snowColors = [
-                'rgba(255,255,255,0.82)',
-                'rgba(255,255,255,0.7)',
-                'rgba(255,255,255,0.78)',
-                'rgba(255,255,255,0.65)',
-                'rgba(255,255,255,0.85)'
-            ];
+            for (let i = 0; i < particleCount; i++) {
+                const el = document.createElement('span');
+                const type = Math.random() > 0.5 ? 'heart' : 'snow';
+                const left = Math.random() * 100;
+                const duration = 8 + Math.random() * 12;
+                const delay = Math.random() * -duration;
+                const scale = 0.6 + Math.random() * 0.8;
 
-            function createParticle(index) {
-                const span = document.createElement('span');
-                const isHeart = Math.random() < 0.5;
+                el.className = `particle ${type}`;
+                el.style.cssText =
+                    `left:${left}%;animation-duration:${duration}s;animation-delay:${delay}s;transform:scale(${scale})`;
+                pContainer.appendChild(el);
+            }
 
-                span.classList.add('particle');
-                span.classList.add(isHeart ? 'particle-heart' : 'particle-snow');
-                span.textContent = isHeart ? '❤' : '❄';
+            // 2. 状态管理
+            const state = {
+                currentTheme: 0,
+                iceHeight: 155, // 默认高度（桌面端）
+                initialIceHeight: 155,
+                isSwitching: false,
+                isMelting: false,
+                isFinished: false,
+                longPressTimer: null,
+                startY: 0,
+                startTime: 0,
+                bodyBottom: 62, // body 的 bottom 值（桌面端）
+            };
 
-                const floatDuration = 6 + Math.random() * 10;
-                const floatDelay = -(Math.random() * floatDuration);
-                const floatDrift = (Math.random() - 0.5) * 70;
-                const floatRotation = 180 + Math.random() * 540;
-                const floatOpacity = 0.35 + Math.random() * 0.45;
-                const leftPercent = 3 + Math.random() * 94;
-                const fontSize = 10 + Math.random() * 18;
-                const bottomStart = -(5 + Math.random() * 20);
-
-                span.style.setProperty('--float-duration', floatDuration + 's');
-                span.style.setProperty('--float-delay', floatDelay + 's');
-                span.style.setProperty('--float-drift', floatDrift + 'px');
-                span.style.setProperty('--float-rotation', floatRotation + 'deg');
-                span.style.setProperty('--float-opacity', floatOpacity);
-                span.style.left = leftPercent + '%';
-                span.style.bottom = bottomStart + '%';
-                span.style.fontSize = fontSize + 'px';
-
-                if (isHeart) {
-                    const heartColor = heartColors[Math.floor(Math.random() * heartColors.length)];
-                    span.style.setProperty('--heart-color', heartColor);
+            // 响应式初始值
+            function updateResponsiveDefaults() {
+                if (window.innerWidth <= 380) {
+                    state.iceHeight = 130;
+                    state.initialIceHeight = 130;
+                    state.bodyBottom = 54;
                 } else {
-                    const snowColor = snowColors[Math.floor(Math.random() * snowColors.length)];
-                    span.style.setProperty('--snow-color', snowColor);
+                    state.iceHeight = 155;
+                    state.initialIceHeight = 155;
+                    state.bodyBottom = 62;
                 }
-
-                return span;
+                // 同步 DOM
+                elements.iceBody.style.height = state.iceHeight + 'px';
+                elements.iceBody.style.bottom = state.bodyBottom + 'px';
             }
 
-            function initParticles() {
-                const fragment = document.createDocumentFragment();
-                for (let i = 0; i < PARTICLE_COUNT; i++) {
-                    fragment.appendChild(createParticle(i));
-                }
-                bgContainer.appendChild(fragment);
-            }
+            // DOM 元素
+            const elements = {
+                popsicle: document.getElementById('popsicle'),
+                iceBody: document.getElementById('iceBody'),
+                emptyEmoji: document.getElementById('emptyEmoji'),
+                emptyText: document.getElementById('emptyText'),
+                body: document.body,
+                highlight: document.querySelector('.highlight'),
+            };
 
-            // ==================== 主题切换逻辑 ====================
-            let lastSwitchTime = 0;
-            const SWITCH_COOLDOWN = 280;
+            // 初始化响应式值
+            updateResponsiveDefaults();
 
-            function switchToTheme(index) {
-                if (index < 0) index = themes.length - 1;
-                if (index >= themes.length) index = 0;
-                if (index === currentThemeIndex) return;
+            // 窗口大小变化时更新
+            let resizeDebounce = null;
+            window.addEventListener('resize', function() {
+                if (resizeDebounce) clearTimeout(resizeDebounce);
+                resizeDebounce = setTimeout(function() {
+                    if (!state.isFinished) {
+                        updateResponsiveDefaults();
+                    } else {
+                        // 如果已吃完，只更新 bodyBottom 以便重置后使用
+                        if (window.innerWidth <= 380) {
+                            state.initialIceHeight = 130;
+                            state.bodyBottom = 54;
+                        } else {
+                            state.initialIceHeight = 155;
+                            state.bodyBottom = 62;
+                        }
+                    }
+                }, 300);
+            });
 
-                currentThemeIndex = index;
-                const theme = themes[index];
+            // 3. 切换主题
+            function switchTheme(direction) {
+                if (state.isSwitching || state.isMelting) return;
 
-                body.setAttribute('data-theme', theme);
-                reminderText.textContent = themeEmojis[index] + ' 注意身体哦 ~';
-                triggerBounce();
-            }
-
-            function nextTheme() {
-                const now = Date.now();
-                if (now - lastSwitchTime < SWITCH_COOLDOWN) return;
-                lastSwitchTime = now;
-                switchToTheme(currentThemeIndex + 1);
-            }
-
-            function prevTheme() {
-                const now = Date.now();
-                if (now - lastSwitchTime < SWITCH_COOLDOWN) return;
-                lastSwitchTime = now;
-                switchToTheme(currentThemeIndex - 1);
-            }
-
-            function triggerBounce() {
-                wrapper.classList.remove('bounce-switch');
-                void wrapper.offsetWidth;
-                wrapper.classList.add('bounce-switch');
+                state.isSwitching = true;
+                
+                // 立即切换主题（背景立刻开始渐变）
+                state.currentTheme = (state.currentTheme + direction + 4) % 4;
+                elements.body.setAttribute('data-theme', state.currentTheme);
+                
+                // 同时触发雪糕动画
+                elements.popsicle.classList.add('switching');
+                
                 setTimeout(() => {
-                    wrapper.classList.remove('bounce-switch');
-                }, 190);
+                    elements.popsicle.classList.remove('switching');
+                    state.isSwitching = false;
+                }, 450); // 动画结束后解锁
             }
 
-            // ==================== 交互监听 ====================
-            window.addEventListener('wheel', function(e) {
-                e.preventDefault();
-                if (e.deltaY < 0) {
-                    nextTheme();
-                } else if (e.deltaY > 0) {
-                    prevTheme();
+            // 4. 动态调整 border-radius 和 highlight
+            function updateBodyAppearance() {
+                const h = state.iceHeight;
+                const initialH = state.initialIceHeight;
+
+                // 动态调整顶部圆角，防止小高度时圆角过大
+                if (h < 60) {
+                    const topRadius = Math.max(12, h * 0.45);
+                    elements.iceBody.style.borderRadius = `${topRadius}px ${topRadius}px 18px 18px`;
+                } else if (h >= initialH - 5) {
+                    // 恢复默认圆角
+                    if (window.innerWidth <= 380) {
+                        elements.iceBody.style.borderRadius = '44px 44px 20px 20px';
+                    } else {
+                        elements.iceBody.style.borderRadius = '50px 50px 24px 24px';
+                    }
                 }
-            }, { passive: false });
 
-            let touchStartY = 0;
-            const TOUCH_THRESHOLD = 35;
+                // 动态调整高光透明度
+                if (elements.highlight) {
+                    if (h < 100) {
+                        const opacity = Math.max(0, (h - 30) / 70);
+                        elements.highlight.style.opacity = Math.min(1, Math.max(0, opacity));
+                    } else {
+                        elements.highlight.style.opacity = '';
+                    }
+                }
+            }
 
+            // 5. 咬一口逻辑 - 从上往下减少雪糕
+            function takeBite(clientX, clientY) {
+                if (state.isMelting || state.isFinished) return;
+
+                // 移除并重新添加动画类以触发动画
+                elements.popsicle.classList.remove('bite');
+                // 强制回流
+                void elements.popsicle.offsetWidth;
+                elements.popsicle.classList.add('bite');
+
+                // 雪糕变短 - body 底部固定，顶部下降
+                if (state.iceHeight > 30) {
+                    state.iceHeight = Math.max(30, state.iceHeight - 20);
+                    elements.iceBody.style.height = state.iceHeight + 'px';
+
+                    // 更新外观
+                    updateBodyAppearance();
+
+                    // 产生糖屑
+                    if (clientX && clientY) {
+                        createConfetti(clientX, clientY);
+                    }
+
+                    // 检查是否吃完
+                    if (state.iceHeight <= 40) {
+                        showEmptyState();
+                    }
+                }
+            }
+
+            // 6. 糖屑特效
+            function createConfetti(x, y) {
+                const colors = ['#FF69B4', '#FFD700', '#00FFFF', '#FF4500', '#7FFF00', '#FF1493', '#FFB6C1',
+                    '#87CEEB'
+                ];
+                const particleCount = 15;
+
+                for (let i = 0; i < particleCount; i++) {
+                    const dot = document.createElement('div');
+                    dot.className = 'confetti';
+
+                    const angle = (Math.PI * 2 * i) / particleCount + Math.random() * 0.5;
+                    const distance = 60 + Math.random() * 60;
+                    const tx = Math.cos(angle) * distance;
+                    const ty = Math.sin(angle) * distance - 50;
+
+                    dot.style.setProperty('--tx', tx + 'px');
+                    dot.style.setProperty('--ty', ty + 'px');
+                    dot.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    dot.style.left = x + 'px';
+                    dot.style.top = y + 'px';
+                    dot.style.width = (6 + Math.random() * 10) + 'px';
+                    dot.style.height = dot.style.width;
+
+                    document.body.appendChild(dot);
+
+                    // 清理
+                    setTimeout(function() { dot.remove(); }, 800);
+                }
+            }
+
+            // 7. 显示吃完状态
+            function showEmptyState() {
+                state.isFinished = true;
+                elements.iceBody.style.opacity = '0.25';
+                elements.emptyEmoji.classList.add('show');
+                elements.emptyText.classList.add('show');
+                // 吃完后让雪糕身体微微缩小
+                elements.iceBody.style.transform = 'scale(0.9)';
+            }
+
+            // 8. 重置雪糕
+            function resetIce() {
+                if (!state.isFinished) return;
+
+                state.isFinished = false;
+                state.iceHeight = state.initialIceHeight;
+                elements.iceBody.style.height = state.iceHeight + 'px';
+                elements.iceBody.style.opacity = '1';
+                elements.iceBody.style.transform = '';
+                elements.emptyEmoji.classList.remove('show');
+                elements.emptyText.classList.remove('show');
+
+                // 恢复默认圆角
+                updateBodyAppearance();
+                if (elements.highlight) {
+                    elements.highlight.style.opacity = '';
+                }
+            }
+
+            // 9. 长按融化开始
+            function startMelting(e) {
+                if (state.isFinished || state.isSwitching) return;
+
+                const touch = e.touches ? e.touches[0] : e;
+                state.isMelting = true;
+
+                // 延迟 500ms 后开始融化
+                state.longPressTimer = setTimeout(function meltLoop() {
+                    if (!state.isMelting) return;
+                    takeBite(touch.clientX, touch.clientY);
+                    if (state.isFinished) {
+                        stopMelting();
+                        return;
+                    }
+                    state.longPressTimer = setTimeout(meltLoop, 150);
+                }, 500);
+            }
+
+            // 10. 停止融化
+            function stopMelting() {
+                state.isMelting = false;
+                if (state.longPressTimer) {
+                    clearTimeout(state.longPressTimer);
+                    state.longPressTimer = null;
+                }
+            }
+
+            // 11. 事件处理
+            let lastClickTime = 0;
+            let clickPending = false;
+            let clickTimer = null;
+
+            // 点击处理（使用 pointer 事件统一桌面和移动端）
+            elements.popsicle.addEventListener('pointerdown', function(e) {
+                if (e.pointerType === 'mouse' && e.button !== 0) return; // 只响应左键
+                if (e.pointerType === 'touch' && e.isPrimary === false) return; // 只响应主触摸点
+
+                startMelting(e);
+            });
+
+            elements.popsicle.addEventListener('pointerup', function(e) {
+                stopMelting();
+            });
+
+            elements.popsicle.addEventListener('pointerleave', function(e) {
+                stopMelting();
+            });
+
+            elements.popsicle.addEventListener('pointercancel', function(e) {
+                stopMelting();
+            });
+
+            // click 事件处理咬一口（pointerup 之后触发）
+            elements.popsicle.addEventListener('click', function(e) {
+                // 如果正在融化（长按），忽略 click
+                if (state.isMelting) return;
+
+                const now = Date.now();
+                if (now - lastClickTime < 350) {
+                    // 双击检测
+                    resetIce();
+                    lastClickTime = 0;
+                    if (clickTimer) clearTimeout(clickTimer);
+                    clickTimer = null;
+                } else {
+                    // 单击 - 咬一口
+                    takeBite(e.clientX, e.clientY);
+                    lastClickTime = now;
+                }
+            });
+
+            // 阻止右键菜单
+            elements.popsicle.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                return false;
+            });
+
+            // 12. 滑动切换（在 document 上监听，但排除 popsicle 上的长按滑动）
             document.addEventListener('touchstart', function(e) {
+                // 记录起始位置用于滑动检测
                 if (e.touches.length === 1) {
-                    touchStartY = e.touches[0].clientY;
+                    state.startY = e.touches[0].clientY;
+                    state.startTime = Date.now();
                 }
             }, { passive: true });
 
             document.addEventListener('touchend', function(e) {
-                if (e.changedTouches.length === 1) {
-                    const endY = e.changedTouches[0].clientY;
-                    const deltaY = touchStartY - endY;
-                    if (Math.abs(deltaY) >= TOUCH_THRESHOLD) {
-                        if (deltaY > 0) {
-                            nextTheme();
-                        } else {
-                            prevTheme();
-                        }
+                if (e.changedTouches.length === 0) return;
+                const endY = e.changedTouches[0].clientY;
+                const diff = state.startY - endY;
+                const timeDiff = Date.now() - state.startTime;
+
+                // 需要足够的滑动距离和速度
+                if (Math.abs(diff) > 50 && timeDiff < 500 && timeDiff > 30) {
+                    if (diff > 0) {
+                        switchTheme(1); // 上滑 → 下一个口味
+                    } else {
+                        switchTheme(-1); // 下滑 → 上一个口味
                     }
                 }
             }, { passive: true });
 
+            // 13. 滚轮切换（桌面端）
+            let wheelTimeout = null;
+            document.addEventListener('wheel', function(e) {
+                if (wheelTimeout) return;
+
+                if (Math.abs(e.deltaY) > 30) {
+                    if (e.deltaY < 0) {
+                        switchTheme(1);
+                    } else {
+                        switchTheme(-1);
+                    }
+
+                    wheelTimeout = setTimeout(function() {
+                        wheelTimeout = null;
+                    }, 600);
+                }
+            }, { passive: true });
+
+            // 14. 键盘控制
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'ArrowUp') {
                     e.preventDefault();
-                    nextTheme();
+                    switchTheme(1);
                 } else if (e.key === 'ArrowDown') {
                     e.preventDefault();
-                    prevTheme();
+                    switchTheme(-1);
+                } else if (e.key === ' ' || e.key === 'Enter') {
+                    e.preventDefault();
+                    const rect = elements.popsicle.getBoundingClientRect();
+                    takeBite(rect.left + rect.width / 2, rect.top + rect.height / 3);
+                } else if (e.key === 'r' || e.key === 'R') {
+                    e.preventDefault();
+                    resetIce();
                 }
             });
 
-            // ==================== 初始化 ====================
-            function init() {
-                initParticles();
-                body.setAttribute('data-theme', themes[currentThemeIndex]);
-                reminderText.textContent = themeEmojis[currentThemeIndex] + ' 注意身体哦 ~';
-            }
+            // 15. 初始外观设置
+            updateBodyAppearance();
 
-            init();
-
-            console.log(
-                '%c🍦 动态雪糕已就绪 %c| %c主题: ' + themeNames[currentThemeIndex] +
-                ' %c| %c滚轮/上下滑动/方向键切换主题',
-                'font-size:16px;',
-                '',
-                'color:#FFB5C5;font-weight:bold;',
-                '',
-                'color:#87CEFA;'
-            );
+            console.log('🍦 动态雪糕已就绪！');
+            console.log('  👆 点击 = 咬一口（从上往下）');
+            console.log('  ⏱️ 长按 = 加速融化');
+            console.log('  👆👆 双击 = 重置（吃完后）');
+            console.log('  📜 上滑/滚轮 = 切换口味');
+            console.log('  ⌨️ 方向键/空格 = 桌面端操作');
         })();
     </script>
 </body>
