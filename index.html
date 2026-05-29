@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>动态雪糕 - 四主题切换</title>
+    <style>
+        /* ============================================================
+           CSS 变量定义 - 4种主题 (草莓/抹茶/巧克力/蓝莓)
+           ============================================================ */
+        :root {
+            /* --- 默认主题：草莓 (Strawberry) --- */
+            --ice-primary: #FFB5C5;
+            --ice-light: #FFD6E2;
+            --ice-dark: #F08FA5;
+            --ice-shadow: #E07A92;
+            --drip-color: rgba(255, 181, 197, 0.75);
+            --drip-color-alt: rgba(255, 200, 215, 0.7);
+            --ice-glow-inner: rgba(255, 220, 230, 0.5);
+            --texture-stripe: rgba(255, 255, 255, 0.08);
+            /* 提示文字颜色 - 草莓 */
+            --text-color: #E07A92;
+            --text-glow: rgba(255, 140, 165, 0.5);
+
+            /* --- 木棍色彩 (通用) --- */
+            --stick-primary: #D4A574;
+            --stick-light: #E0BC98;
+            --stick-dark: #C08D5C;
+            --stick-edge: #B07848;
+
+            /* --- 投影与高光 --- */
+            --drop-shadow-1: rgba(0, 0, 0, 0.18);
+            --drop-shadow-2: rgba(0, 0, 0, 0.12);
+            --drop-shadow-3: rgba(0, 0, 0, 0.07);
+            --inner-shadow-light: rgba(255, 255, 255, 0.5);
+            --inner-shadow-dark: rgba(0, 0, 0, 0.08);
+
+            /* --- 背景渐变 --- */
+            --bg-top: #87CEFA;
+            --bg-mid: #4682B4;
+            --bg-bottom: #1E90FF;
+
+            /* --- 尺寸体系 --- */
+            --ice-width: 130px;
+            --ice-height: 170px;
+            --ice-radius-top-h: 60px;
+            --ice-radius-top-v: 52px;
+            --ice-radius-bottom-h: 22px;
+            --ice-radius-bottom-v: 18px;
+            --stick-width: 32px;
+            --stick-height: 68px;
+            --stick-radius: 5px;
+            --drip-size: 14px;
+            --highlight-band-w: 26px;
+            --highlight-band-h: 62%;
+            --light-sweep-size: 56px;
+
+            /* --- 动画参数 --- */
+            --breathe-float: 8px;
+            --breathe-swing: 2deg;
+            --breathe-duration: 3s;
+            --light-sweep-duration: 5s;
+            --drip-duration: 3s;
+            --drip-fall: 58px;
+        }
+
+        /* --- 抹茶主题 --- */
+        [data-theme="matcha"] {
+            --ice-primary: #B5D5A5;
+            --ice-light: #D2E8C8;
+            --ice-dark: #8DB87C;
+            --ice-shadow: #6D9A5C;
+            --drip-color: rgba(181, 213, 165, 0.75);
+            --drip-color-alt: rgba(200, 225, 190, 0.7);
+            --ice-glow-inner: rgba(210, 235, 200, 0.5);
+            --texture-stripe: rgba(255, 255, 255, 0.09);
+            --text-color: #6D9A5C;
+            --text-glow: rgba(120, 170, 100, 0.5);
+        }
+
+        /* --- 巧克力主题 (已更新为丝滑牛奶巧克力) --- */
+        [data-theme="chocolate"] {
+            --ice-primary: #D2A679;      /* 主色：柔和牛奶巧克力 */
+            --ice-light: #F0D4B0;       /* 高光：淡奶油色 */
+            --ice-dark: #B87B4A;        /* 暗部：温暖可可色 */
+            --ice-shadow: #8C5A32;      /* 阴影：深巧克力色 */
+            --drip-color: rgba(210, 166, 121, 0.75);
+            --drip-color-alt: rgba(230, 195, 150, 0.7);
+            --ice-glow-inner: rgba(240, 210, 175, 0.5);
+            --texture-stripe: rgba(255, 255, 255, 0.08);
+            --text-color: #B87B4A;
+            --text-glow: rgba(184, 123, 74, 0.5);
+        }
+
+        /* --- 蓝莓主题 --- */
+        [data-theme="blueberry"] {
+            --ice-primary: #C5B5E0;
+            --ice-light: #D8CCF0;
+            --ice-dark: #9B8CC0;
+            --ice-shadow: #7B6CA0;
+            --drip-color: rgba(197, 181, 224, 0.75);
+            --drip-color-alt: rgba(210, 198, 235, 0.7);
+            --ice-glow-inner: rgba(215, 205, 238, 0.5);
+            --texture-stripe: rgba(255, 255, 255, 0.1);
+            --text-color: #9B8CC0;
+            --text-glow: rgba(140, 125, 180, 0.5);
+        }
+
+        /* ============================================================
+           全局重置 & 背景
+           ============================================================ */
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            height: 100%;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            min-height: 100dvh;
+            background: linear-gradient(180deg,
+                    var(--bg-top) 0%,
+                    var(--bg-mid) 45%,
+                    var(--bg-bottom) 100%);
+            background-attachment: fixed;
+            overflow: hidden;
+            font-family: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            position: relative;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+            gap: 10px;
+        }
+
+        /* ============================================================
+           背景装饰容器 - 粒子承载层
+           ============================================================ */
+        .bg-decorations {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            width: 100dvw;
+            height: 100vh;
+            height: 100dvh;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        /* --- 粒子通用样式 --- */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            will-change: transform, opacity;
+            animation: floatUp var(--float-duration, 8s) ease-in-out infinite;
+            animation-delay: var(--float-delay, 0s);
+            opacity: 0;
+            line-height: 1;
+            text-shadow: 0 0 6px currentColor;
+        }
+
+        .particle-heart {
+            color: var(--heart-color, #FFB5C5);
+        }
+
+        .particle-snow {
+            color: var(--snow-color, rgba(255, 255, 255, 0.85));
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.6), 0 0 16px rgba(255, 255, 255, 0.3);
+        }
+
+        /* ============================================================
+           floatUp 关键帧 - 粒子上浮+旋转+漂移
+           ============================================================ */
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0) translateX(0) rotate(0deg);
+                opacity: 0;
+            }
+            6% {
+                opacity: var(--float-opacity, 0.55);
+            }
+            82% {
+                opacity: var(--float-opacity, 0.5);
+            }
+            100% {
+                transform: translateY(-108vh) translateX(var(--float-drift, 18px)) rotate(var(--float-rotation, 420deg));
+                opacity: 0;
+            }
+        }
+
+        /* ============================================================
+           雪糕外层容器 - 呼吸动画
+           ============================================================ */
+        .popsicle-wrapper {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            will-change: transform;
+            animation: breathe var(--breathe-duration) ease-in-out infinite;
+            transform-origin: center center;
+            transition: none;
+        }
+
+        .popsicle-wrapper.bounce-switch {
+            animation: bounce-switch 180ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        /* ============================================================
+           雪糕主体 - 多层投影
+           ============================================================ */
+        .popsicle {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            filter:
+                drop-shadow(0 10px 22px var(--drop-shadow-1)) drop-shadow(0 5px 10px var(--drop-shadow-2)) drop-shadow(0 2px 5px var(--drop-shadow-3));
+            will-change: filter;
+        }
+
+        /* ============================================================
+           冰体样式
+           ============================================================ */
+        .ice-body {
+            position: relative;
+            width: var(--ice-width);
+            height: var(--ice-height);
+            border-radius:
+                var(--ice-radius-top-h) var(--ice-radius-top-h) var(--ice-radius-bottom-h) var(--ice-radius-bottom-h) / var(--ice-radius-top-v) var(--ice-radius-top-v) var(--ice-radius-bottom-v) var(--ice-radius-bottom-v);
+            background: radial-gradient(ellipse at 38% 35%,
+                    var(--ice-light) 0%,
+                    var(--ice-primary) 38%,
+                    var(--ice-dark) 72%,
+                    var(--ice-shadow) 100%);
+            box-shadow:
+                inset 0 3px 7px var(--inner-shadow-light),
+                inset -4px -8px 18px var(--inner-shadow-dark),
+                inset 2px 2px 4px rgba(255, 255, 255, 0.3),
+                0 3px 6px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+            z-index: 2;
+            will-change: box-shadow;
+        }
+
+        /* --- 冰体纹理 (伪元素 + repeating-linear-gradient) --- */
+        .ice-body::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(0deg,
+                    transparent 0px,
+                    transparent 3px,
+                    var(--texture-stripe) 3px,
+                    var(--texture-stripe) 4.5px);
+            border-radius: inherit;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* --- 半透明白色高光带 --- */
+        .ice-body::after {
+            content: '';
+            position: absolute;
+            top: 12%;
+            left: 22%;
+            width: var(--highlight-band-w);
+            height: var(--highlight-band-h);
+            border-radius: 50%;
+            background: linear-gradient(180deg,
+                    rgba(255, 255, 255, 0.7) 0%,
+                    rgba(255, 255, 255, 0.55) 18%,
+                    rgba(255, 255, 255, 0.35) 42%,
+                    rgba(255, 255, 255, 0.08) 72%,
+                    transparent 100%);
+            filter: blur(5px);
+            z-index: 3;
+            pointer-events: none;
+            transform: rotate(-6deg);
+        }
+
+        /* --- 光线游走层 --- */
+        .light-sweep {
+            position: absolute;
+            top: 6px;
+            left: 8px;
+            width: var(--light-sweep-size);
+            height: var(--light-sweep-size);
+            border-radius: 50%;
+            background: radial-gradient(circle at center,
+                    rgba(255, 255, 255, 0.75) 0%,
+                    rgba(255, 255, 255, 0.4) 22%,
+                    rgba(255, 255, 255, 0.08) 50%,
+                    transparent 70%);
+            pointer-events: none;
+            z-index: 4;
+            will-change: transform, opacity;
+            animation: light-sweep-move var(--light-sweep-duration) ease-in-out infinite;
+        }
+
+        /* ============================================================
+           木棍样式
+           ============================================================ */
+        .stick {
+            width: var(--stick-width);
+            height: var(--stick-height);
+            margin-top: -4px;
+            border-radius: 0 0 var(--stick-radius) var(--stick-radius);
+            background: linear-gradient(180deg,
+                    var(--stick-light) 0%,
+                    var(--stick-primary) 8%,
+                    var(--stick-dark) 22%,
+                    var(--stick-primary) 38%,
+                    var(--stick-light) 50%,
+                    var(--stick-primary) 62%,
+                    var(--stick-dark) 76%,
+                    var(--stick-edge) 90%,
+                    var(--stick-dark) 100%);
+            box-shadow:
+                0 2px 4px rgba(0, 0, 0, 0.1),
+                inset 2px 0 3px rgba(255, 255, 255, 0.2),
+                inset -2px 0 3px rgba(0, 0, 0, 0.08);
+            z-index: 1;
+            position: relative;
+        }
+
+        .stick::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(var(--stick-width) + 6px);
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.06);
+            filter: blur(3px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ============================================================
+           水滴容器 & 水滴样式
+           ============================================================ */
+        .drips {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 6;
+        }
+
+        .drip {
+            position: absolute;
+            width: var(--drip-size);
+            height: var(--drip-size);
+            border-radius: 50% 0 50% 50%;
+            transform: rotate(45deg) scale(1);
+            opacity: 0;
+            will-change: transform, opacity;
+            pointer-events: none;
+        }
+
+        .drip-1 {
+            bottom: 8px;
+            left: calc(50% - 16px);
+            background: radial-gradient(circle at 35% 35%,
+                    rgba(255, 210, 225, 0.85) 0%,
+                    var(--drip-color) 50%,
+                    rgba(240, 143, 165, 0.5) 100%);
+            animation: drip-fall var(--drip-duration) ease-in infinite;
+            animation-delay: 0s;
+        }
+
+        .drip-2 {
+            bottom: 4px;
+            left: calc(50% + 4px);
+            background: radial-gradient(circle at 35% 35%,
+                    rgba(255, 218, 230, 0.8) 0%,
+                    var(--drip-color-alt) 50%,
+                    rgba(240, 150, 170, 0.45) 100%);
+            animation: drip-fall var(--drip-duration) ease-in infinite;
+            animation-delay: calc(var(--drip-duration) * 0.5);
+        }
+
+        /* ============================================================
+           提示文字样式
+           ============================================================ */
+        .reminder-text {
+            position: relative;
+            z-index: 2;
+            margin-top: 8px;
+            font-size: clamp(15px, 2.8vw, 21px);
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            color: var(--text-color);
+            text-shadow:
+                0 0 12px var(--text-glow),
+                0 0 28px var(--text-glow),
+                0 0 2px rgba(255, 255, 255, 0.6),
+                0 1px 2px rgba(0, 0, 0, 0.15);
+            animation: text-gentle-float 4s ease-in-out infinite;
+            transition: color 0.4s ease, text-shadow 0.4s ease;
+            will-change: transform, text-shadow;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        @keyframes text-gentle-float {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+            35% {
+                transform: translateY(-4px);
+            }
+            65% {
+                transform: translateY(-1px);
+            }
+        }
+
+        /* ============================================================
+           关键帧动画
+           ============================================================ */
+        @keyframes breathe {
+            0%,
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
+            25% {
+                transform: translateY(calc(var(--breathe-float) * -0.7)) rotate(calc(var(--breathe-swing) * -0.6));
+            }
+            50% {
+                transform: translateY(calc(var(--breathe-float) * -1)) rotate(0deg);
+            }
+            75% {
+                transform: translateY(calc(var(--breathe-float) * -0.5)) rotate(calc(var(--breathe-swing) * 0.8));
+            }
+        }
+
+        @keyframes bounce-switch {
+            0% {
+                transform: scale(1) rotate(0deg);
+            }
+            28% {
+                transform: scale(0.88) rotate(-3deg);
+            }
+            55% {
+                transform: scale(1.05) rotate(1.5deg);
+            }
+            78% {
+                transform: scale(0.97) rotate(-0.4deg);
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        @keyframes light-sweep-move {
+            0% {
+                transform: translate(0px, 0px);
+                opacity: 0.3;
+            }
+            22% {
+                transform: translate(38px, 48px);
+                opacity: 0.65;
+            }
+            44% {
+                transform: translate(68px, 98px);
+                opacity: 0.7;
+            }
+            56% {
+                transform: translate(48px, 62px);
+                opacity: 0.5;
+            }
+            78% {
+                transform: translate(14px, 16px);
+                opacity: 0.35;
+            }
+            100% {
+                transform: translate(0px, 0px);
+                opacity: 0.3;
+            }
+        }
+
+        @keyframes drip-fall {
+            0% {
+                transform: rotate(45deg) translateY(0) scale(1);
+                opacity: 0;
+            }
+            6% {
+                opacity: 0.75;
+                transform: rotate(45deg) translateY(0) scale(1);
+            }
+            55% {
+                transform: rotate(45deg) translateY(calc(var(--drip-fall) * 0.6)) scale(0.55);
+                opacity: 0.4;
+            }
+            85% {
+                transform: rotate(45deg) translateY(var(--drip-fall)) scale(0.12);
+                opacity: 0;
+            }
+            100% {
+                transform: rotate(45deg) translateY(var(--drip-fall)) scale(0);
+                opacity: 0;
+            }
+        }
+
+        /* ============================================================
+           响应式适配
+           ============================================================ */
+        @media (max-width: 480px) {
+            :root {
+                --ice-width: 105px;
+                --ice-height: 140px;
+                --ice-radius-top-h: 50px;
+                --ice-radius-top-v: 42px;
+                --ice-radius-bottom-h: 18px;
+                --ice-radius-bottom-v: 15px;
+                --stick-width: 27px;
+                --stick-height: 55px;
+                --drip-size: 11px;
+                --light-sweep-size: 44px;
+                --highlight-band-w: 20px;
+                --breathe-float: 6px;
+                --breathe-swing: 1.5deg;
+                --drip-fall: 44px;
+            }
+            .reminder-text {
+                font-size: 13px;
+                letter-spacing: 0.09em;
+                margin-top: 4px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            :root {
+                --ice-width: 88px;
+                --ice-height: 118px;
+                --ice-radius-top-h: 42px;
+                --ice-radius-top-v: 35px;
+                --ice-radius-bottom-h: 15px;
+                --ice-radius-bottom-v: 12px;
+                --stick-width: 22px;
+                --stick-height: 46px;
+                --drip-size: 9px;
+                --light-sweep-size: 36px;
+                --highlight-band-w: 16px;
+                --breathe-float: 5px;
+                --breathe-swing: 1.2deg;
+                --drip-fall: 34px;
+            }
+            .reminder-text {
+                font-size: 11px;
+                letter-spacing: 0.06em;
+                margin-top: 2px;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            :root {
+                --ice-width: 148px;
+                --ice-height: 192px;
+                --ice-radius-top-h: 68px;
+                --ice-radius-top-v: 58px;
+                --ice-radius-bottom-h: 26px;
+                --ice-radius-bottom-v: 20px;
+                --stick-width: 36px;
+                --stick-height: 76px;
+                --drip-size: 16px;
+                --light-sweep-size: 62px;
+                --highlight-band-w: 30px;
+                --drip-fall: 66px;
+            }
+            .reminder-text {
+                font-size: 22px;
+                letter-spacing: 0.15em;
+                margin-top: 12px;
+            }
+        }
+
+        /* ============================================================
+           无障碍降级：减少动画偏好
+           ============================================================ */
+        @media (prefers-reduced-motion: reduce) {
+            .popsicle-wrapper {
+                animation: none !important;
+                transform: translateY(calc(var(--breathe-float) * -0.5)) rotate(0deg) !important;
+            }
+
+            .popsicle-wrapper.bounce-switch {
+                animation: none !important;
+                transform: scale(1) rotate(0deg) !important;
+            }
+
+            .light-sweep {
+                animation: none !important;
+                opacity: 0.35;
+                transform: translate(30px, 40px);
+            }
+
+            .drip-1,
+            .drip-2 {
+                animation: none !important;
+                opacity: 0;
+                display: none;
+            }
+
+            .particle {
+                animation: none !important;
+                opacity: 0 !important;
+            }
+
+            .reminder-text {
+                animation: none !important;
+                transform: translateY(-2px);
+            }
+        }
+    </style>
+</head>
+<body data-theme="strawberry">
+
+    <!-- ============================================================
+    背景装饰容器 - JS动态填充粒子
+    ============================================================ -->
+    <div class="bg-decorations" id="bgDecorations" aria-hidden="true"></div>
+
+    <!-- ============================================================
+    雪糕主体结构
+    ============================================================ -->
+    <div class="popsicle-wrapper" id="popsicleWrapper">
+        <div class="popsicle">
+            <!-- 冰体 -->
+            <div class="ice-body">
+                <!-- 光线游走层 -->
+                <div class="light-sweep"></div>
+            </div>
+            <!-- 木棍 -->
+            <div class="stick"></div>
+        </div>
+        <!-- 水滴独立容器 -->
+        <div class="drips">
+            <div class="drip drip-1"></div>
+            <div class="drip drip-2"></div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+    提示文字 - 颜色随主题变化
+    ============================================================ -->
+    <p class="reminder-text" id="reminderText">💗 注意身体哦 ~</p>
+
+    <!-- ============================================================
+    JavaScript：粒子生成 + 主题切换交互
+    ============================================================ -->
+    <script>
+        (function() {
+            // ==================== 主题配置 ====================
+            const themes = ['strawberry', 'matcha', 'chocolate', 'blueberry'];
+            const themeNames = ['草莓', '抹茶', '巧克力', '蓝莓'];
+            const themeEmojis = ['💗', '💚', '🤎', '💜'];
+            let currentThemeIndex = 0;
+
+            // ==================== DOM 引用 ====================
+            const body = document.body;
+            const wrapper = document.getElementById('popsicleWrapper');
+            const bgContainer = document.getElementById('bgDecorations');
+            const reminderText = document.getElementById('reminderText');
+
+            // ==================== 粒子生成 ====================
+            const PARTICLE_COUNT = 20;
+            const heartColors = [
+                '#FFB5C5', '#FFD0DC', '#FF9EAF', '#F8A4B8', '#FFC2D0',
+                '#FFAAB8', '#FFBCC8', '#F095A8', '#FFC8D4', '#FF99AD'
+            ];
+            const snowColors = [
+                'rgba(255,255,255,0.82)',
+                'rgba(255,255,255,0.7)',
+                'rgba(255,255,255,0.78)',
+                'rgba(255,255,255,0.65)',
+                'rgba(255,255,255,0.85)'
+            ];
+
+            function createParticle(index) {
+                const span = document.createElement('span');
+                const isHeart = Math.random() < 0.5;
+
+                span.classList.add('particle');
+                span.classList.add(isHeart ? 'particle-heart' : 'particle-snow');
+                span.textContent = isHeart ? '❤' : '❄';
+
+                const floatDuration = 6 + Math.random() * 10;
+                const floatDelay = -(Math.random() * floatDuration);
+                const floatDrift = (Math.random() - 0.5) * 70;
+                const floatRotation = 180 + Math.random() * 540;
+                const floatOpacity = 0.35 + Math.random() * 0.45;
+                const leftPercent = 3 + Math.random() * 94;
+                const fontSize = 10 + Math.random() * 18;
+                const bottomStart = -(5 + Math.random() * 20);
+
+                span.style.setProperty('--float-duration', floatDuration + 's');
+                span.style.setProperty('--float-delay', floatDelay + 's');
+                span.style.setProperty('--float-drift', floatDrift + 'px');
+                span.style.setProperty('--float-rotation', floatRotation + 'deg');
+                span.style.setProperty('--float-opacity', floatOpacity);
+                span.style.left = leftPercent + '%';
+                span.style.bottom = bottomStart + '%';
+                span.style.fontSize = fontSize + 'px';
+
+                if (isHeart) {
+                    const heartColor = heartColors[Math.floor(Math.random() * heartColors.length)];
+                    span.style.setProperty('--heart-color', heartColor);
+                } else {
+                    const snowColor = snowColors[Math.floor(Math.random() * snowColors.length)];
+                    span.style.setProperty('--snow-color', snowColor);
+                }
+
+                return span;
+            }
+
+            function initParticles() {
+                const fragment = document.createDocumentFragment();
+                for (let i = 0; i < PARTICLE_COUNT; i++) {
+                    fragment.appendChild(createParticle(i));
+                }
+                bgContainer.appendChild(fragment);
+            }
+
+            // ==================== 主题切换逻辑 ====================
+            let lastSwitchTime = 0;
+            const SWITCH_COOLDOWN = 280;
+
+            function switchToTheme(index) {
+                if (index < 0) index = themes.length - 1;
+                if (index >= themes.length) index = 0;
+                if (index === currentThemeIndex) return;
+
+                currentThemeIndex = index;
+                const theme = themes[index];
+
+                body.setAttribute('data-theme', theme);
+                reminderText.textContent = themeEmojis[index] + ' 注意身体哦 ~';
+                triggerBounce();
+            }
+
+            function nextTheme() {
+                const now = Date.now();
+                if (now - lastSwitchTime < SWITCH_COOLDOWN) return;
+                lastSwitchTime = now;
+                switchToTheme(currentThemeIndex + 1);
+            }
+
+            function prevTheme() {
+                const now = Date.now();
+                if (now - lastSwitchTime < SWITCH_COOLDOWN) return;
+                lastSwitchTime = now;
+                switchToTheme(currentThemeIndex - 1);
+            }
+
+            function triggerBounce() {
+                wrapper.classList.remove('bounce-switch');
+                void wrapper.offsetWidth;
+                wrapper.classList.add('bounce-switch');
+                setTimeout(() => {
+                    wrapper.classList.remove('bounce-switch');
+                }, 190);
+            }
+
+            // ==================== 交互监听 ====================
+            window.addEventListener('wheel', function(e) {
+                e.preventDefault();
+                if (e.deltaY < 0) {
+                    nextTheme();
+                } else if (e.deltaY > 0) {
+                    prevTheme();
+                }
+            }, { passive: false });
+
+            let touchStartY = 0;
+            const TOUCH_THRESHOLD = 35;
+
+            document.addEventListener('touchstart', function(e) {
+                if (e.touches.length === 1) {
+                    touchStartY = e.touches[0].clientY;
+                }
+            }, { passive: true });
+
+            document.addEventListener('touchend', function(e) {
+                if (e.changedTouches.length === 1) {
+                    const endY = e.changedTouches[0].clientY;
+                    const deltaY = touchStartY - endY;
+                    if (Math.abs(deltaY) >= TOUCH_THRESHOLD) {
+                        if (deltaY > 0) {
+                            nextTheme();
+                        } else {
+                            prevTheme();
+                        }
+                    }
+                }
+            }, { passive: true });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    nextTheme();
+                } else if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    prevTheme();
+                }
+            });
+
+            // ==================== 初始化 ====================
+            function init() {
+                initParticles();
+                body.setAttribute('data-theme', themes[currentThemeIndex]);
+                reminderText.textContent = themeEmojis[currentThemeIndex] + ' 注意身体哦 ~';
+            }
+
+            init();
+
+            console.log(
+                '%c🍦 动态雪糕已就绪 %c| %c主题: ' + themeNames[currentThemeIndex] +
+                ' %c| %c滚轮/上下滑动/方向键切换主题',
+                'font-size:16px;',
+                '',
+                'color:#FFB5C5;font-weight:bold;',
+                '',
+                'color:#87CEFA;'
+            );
+        })();
+    </script>
+</body>
+</html>
